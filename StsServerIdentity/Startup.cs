@@ -54,7 +54,8 @@ namespace StsServerIdentity
                     CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
             });
 
-            var x509Certificate2 = GetCertificate(_environment, _configuration);
+            var certificateThumbprint = _configuration["CertificateThumbprint"];
+            //var x509Certificate2 = GetCertificate(_environment, certificateThumbprint);
             AddLocalizationConfigurations(services);
 
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -105,14 +106,16 @@ namespace StsServerIdentity
                 })
                 .AddNewtonsoftJson();
 
-            var stsConfig = _configuration.GetSection("StsConfig");
+            //var stsConfig = _configuration.GetSection("StsConfig");
+            var apiSecret = _configuration["ApiSecret"];
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
             services.AddIdentityServer()
-                .AddSigningCredential(x509Certificate2)
+                .AddDeveloperSigningCredential()
+                //.AddSigningCredential(x509Certificate2)
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
-                .AddInMemoryApiResources(Config.GetApiResources())
-                .AddInMemoryClients(Config.GetClients(stsConfig))
+                .AddInMemoryApiResources(Config.GetApis(apiSecret))
+                .AddInMemoryClients(Config.GetClients())
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddProfileService<IdentityWithAdditionalClaimsProfileService>()
                 .AddOperationalStore(options =>
@@ -213,33 +216,25 @@ namespace StsServerIdentity
             });
         }
 
-        private static X509Certificate2 GetCertificate(IWebHostEnvironment environment, IConfiguration configuration)
+        private static X509Certificate2 GetCertificate(IWebHostEnvironment environment, string certificateThumbprint)
         {
-            X509Certificate2 cert;
-            var useLocalCertStore = Convert.ToBoolean(configuration["UseLocalCertStore"]);
-            var certificateThumbprint = configuration["CertificateThumbprint"];
+            X509Certificate2 cert = null;
 
-            if (environment.IsProduction())
+            Console.WriteLine($"AAAA cert: {certificateThumbprint}");
+            // dev, test, production
+            using (X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
-                if (useLocalCertStore)
+                store.Open(OpenFlags.ReadOnly);
+                var certs = store.Certificates.Find(X509FindType.FindByThumbprint, certificateThumbprint, false);
+                if (certs.Count > 0)
                 {
-                    using (X509Store store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
-                    {
-                        store.Open(OpenFlags.ReadOnly);
-                        var certs = store.Certificates.Find(X509FindType.FindByThumbprint, certificateThumbprint, false);
-                        cert = certs[0];
-                        store.Close();
-                    }
+                    cert = certs[0];
                 }
-                else
-                {
-                    // Azure deployment, will be used if deployed to Azure
-                    var vaultConfigSection = configuration.GetSection("Vault");
-                    var keyVaultService = new KeyVaultCertificateService(vaultConfigSection["Url"], vaultConfigSection["ClientId"], vaultConfigSection["ClientSecret"]);
-                    cert = keyVaultService.GetCertificateFromKeyVault(vaultConfigSection["CertificateName"]);
-                }
+                store.Close();
             }
-            else
+
+            // for local development
+            if (cert == null)
             {
                 cert = new X509Certificate2(Path.Combine(environment.ContentRootPath, "sts_dev_cert.pfx"), "1234");
             }

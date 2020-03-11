@@ -10,6 +10,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Readme.md = Readme.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiServices", "ApiServices\ApiServices.csproj", "{99B58CEB-C495-4BF8-8F54-F7F4896AB68E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeConsolePKCEClient", "NativeConsolePKCEClient\NativeConsolePKCEClient.csproj", "{9063D819-46B6-46B8-BDCD-28C45B319490}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +24,14 @@ Global
 		{8A82C135-F0FC-4875-BCCB-5A28BFB95BFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A82C135-F0FC-4875-BCCB-5A28BFB95BFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A82C135-F0FC-4875-BCCB-5A28BFB95BFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99B58CEB-C495-4BF8-8F54-F7F4896AB68E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99B58CEB-C495-4BF8-8F54-F7F4896AB68E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99B58CEB-C495-4BF8-8F54-F7F4896AB68E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99B58CEB-C495-4BF8-8F54-F7F4896AB68E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9063D819-46B6-46B8-BDCD-28C45B319490}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9063D819-46B6-46B8-BDCD-28C45B319490}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9063D819-46B6-46B8-BDCD-28C45B319490}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9063D819-46B6-46B8-BDCD-28C45B319490}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

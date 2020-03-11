@@ -4,3 +4,4 @@
 /**/node_modules
 /**/obj
 /StsServerIdentity/StsServerIdentity.csproj.user
+/StsServerIdentity/.config/dotnet-tools.json

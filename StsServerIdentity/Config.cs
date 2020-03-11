@@ -19,71 +19,49 @@ namespace StsServerIdentity
             };
         }
 
-        public static IEnumerable<ApiResource> GetApiResources()
+        public static IEnumerable<ApiResource> GetApis(string apiSecret)
         {
-            return new List<ApiResource>
+            return new ApiResource[]
             {
-                // example code
-                //new ApiResource("dataEventRecords")
-                //{
-                //    ApiSecrets =
-                //    {
-                //        new Secret("dataEventRecordsSecret".Sha256())
-                //    },
-                //    Scopes =
-                //    {
-                //        new Scope
-                //        {
-                //            Name = "dataeventrecords",
-                //            DisplayName = "Scope for the dataEventRecords ApiResource"
-                //        }
-                //    },
-                //    UserClaims = { "role", "admin", "user", "dataEventRecords", "dataEventRecords.admin", "dataEventRecords.user" }
-                //}
+                new ApiResource("ProtectedApi", "Protected API")
+                {
+                    ApiSecrets =
+                    {
+                        new Secret(apiSecret.Sha256())
+                    },
+                    Scopes =
+                    {
+                        new Scope
+                        {
+                            Name = "api_scope",
+                            ShowInDiscoveryDocument = false
+                        }
+                    },
+                }
             };
         }
 
-        public static IEnumerable<Client> GetClients(IConfigurationSection stsConfig)
+        public static IEnumerable<Client> GetClients()
         {
-            // TODO use configs in app
-            //var yourConfig = stsConfig["ClientUrl"];
-
-            return new List<Client>
+            return new[]
             {
-                // example code
-                //new Client
-                //{
-                //    ClientName = "angularclient",
-                //    ClientId = "angularclient",
-                //    AccessTokenType = AccessTokenType.Reference,
-                //    AccessTokenLifetime = 330,// 330 seconds, default 60 minutes
-                //    IdentityTokenLifetime = 30,
-                //    AllowedGrantTypes = GrantTypes.Implicit,
-                //    AllowAccessTokensViaBrowser = true,
-                //    RedirectUris = new List<string>
-                //    {
-                //        "https://localhost:44311",
-                //        "https://localhost:44311/silent-renew.html"
+                new Client
+                {
+                    ClientId = "native.code",
+                    ClientName = "Native Client (Code with PKCE)",
 
-                //    },
-                //    PostLogoutRedirectUris = new List<string>
-                //    {
-                //        "https://localhost:44311/unauthorized",
-                //        "https://localhost:44311"
-                //    },
-                //    AllowedCorsOrigins = new List<string>
-                //    {
-                //        "https://localhost:44311",
-                //        "http://localhost:44311"
-                //    },
-                //    AllowedScopes = new List<string>
-                //    {
-                //        "openid",
-                //        "role",
-                //        "profile",
-                //        "email"
-                //    }
-                //}
+                    RedirectUris = { "https://127.0.0.1:45656" },
+                    PostLogoutRedirectUris = { "https://127.0.0.1:45656" },
+
+                    RequireClientSecret = false,
+
+                    AllowedGrantTypes = GrantTypes.Code,
+                    RequirePkce = true,
+                    AllowedScopes = { "openid", "profile", "email", "ProtectedApi" },
+
+                    AllowOfflineAccess = true,
+                    RefreshTokenUsage = TokenUsage.ReUse
+                 }
             };
         }
     }
