@@ -1,0 +1,5 @@
+/.vs
+/StsServerIdentity/.vs
+/**/bin
+/**/node_modules
+/**/obj
