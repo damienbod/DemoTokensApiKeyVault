@@ -10,7 +10,7 @@ namespace NativeConsolePKCEClient
 {
     public class Program
     {
-        static string _authority = "https://localhost:44364";
+        static string _authority = "https://stsserveridentity20200311041815.azurewebsites.net";
         static string _api = "https://apiservices20200311091719.azurewebsites.net";
 
         static OidcClient _oidcClient;
