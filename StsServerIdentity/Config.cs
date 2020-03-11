@@ -33,7 +33,9 @@ namespace StsServerIdentity
                     {
                         new Scope
                         {
-                            Name = "api_scope",
+                            Name = "api_scope", 
+                            DisplayName = "api_scope", 
+                            Description = "scope required to user this api",
                             ShowInDiscoveryDocument = false
                         }
                     },
@@ -57,7 +59,7 @@ namespace StsServerIdentity
 
                     AllowedGrantTypes = GrantTypes.Code,
                     RequirePkce = true,
-                    AllowedScopes = { "openid", "profile", "email", "ProtectedApi" },
+                    AllowedScopes = { "openid", "profile", "email", "ProtectedApi", "api_scope" },
 
                     AllowOfflineAccess = true,
                     RefreshTokenUsage = TokenUsage.ReUse

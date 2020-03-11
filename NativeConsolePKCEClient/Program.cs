@@ -33,7 +33,7 @@ namespace NativeConsolePKCEClient
                 Authority = _authority,
                 ClientId = "native.code",
                 RedirectUri = redirectUri,
-                Scope = "openid profile ProtectedApi",
+                Scope = "openid profile ProtectedApi api_scope",
                 FilterClaims = false,
                 Browser = browser,
                 Flow = OidcClientOptions.AuthenticationFlow.AuthorizationCode,
@@ -80,7 +80,7 @@ namespace NativeConsolePKCEClient
             var currentAccessToken = result.AccessToken;
             var currentRefreshToken = result.RefreshToken;
 
-            var menu = " x:exit \n b:call api All \n c:call api with route \n d:post api with body \n e:call api with query parameter";
+            var menu = " x:exit \n b:call api All \n ";
             if (currentRefreshToken != null)
             {
                 menu += "r:refresh token";
