@@ -58,8 +58,8 @@ namespace StsServerIdentity
 
                         config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                             .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
-                            .AddEnvironmentVariables();
-                        //.AddUserSecrets("your user secret....");
+                            .AddEnvironmentVariables()
+                            .AddUserSecrets("3ca2f771-a044-4998-9bd3-21e0719ffa7b");
                     }
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

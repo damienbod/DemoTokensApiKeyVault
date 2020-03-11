@@ -9,11 +9,13 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageTags>oidc identityserver4 identity aspnetcore</PackageTags>
     <PackageReleaseNotes>Added support for FIDO2 MFA, Support for custom namespaces, Allow clients to request MFA requirement, added amr claim</PackageReleaseNotes>
+    <UserSecretsId>3ca2f771-a044-4998-9bd3-21e0719ffa7b</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifier" Version="3.2.435" />
     <PackageReference Include="IdentityServer4" Version="3.1.2" />
     <PackageReference Include="IdentityServer4.AspNetIdentity" Version="3.1.2" />
+    <PackageReference Include="IdentityServer4.EntityFramework" Version="3.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.2" />
