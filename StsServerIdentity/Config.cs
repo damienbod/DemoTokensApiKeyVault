@@ -38,7 +38,7 @@ namespace StsServerIdentity
                             Description = "scope required to user this api",
                             ShowInDiscoveryDocument = false
                         }
-                    },
+                    }
                 }
             };
         }
