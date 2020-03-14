@@ -31,6 +31,7 @@ using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
 using System.Linq;
 using Microsoft.Azure.KeyVault.Models;
+using IdentityServer4.AzureKeyVault;
 
 namespace StsServerIdentity
 {
@@ -62,7 +63,7 @@ namespace StsServerIdentity
             });
 
             var certificateThumbprint = _configuration["CertificateThumbprint"];
-            var x509Certificate2 = GetCertificate(_environment, certificateThumbprint);
+            var x509Certificate2 = GetCertificate(_environment, "StsCert");
             AddLocalizationConfigurations(services);
 
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -117,9 +118,9 @@ namespace StsServerIdentity
             var apiSecret = _configuration["ApiSecret"];
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-            services.AddIdentityServer()
-                .AddDeveloperSigningCredential()
-                //.AddSigningCredential(x509Certificate2)
+            var identityServer = services.AddIdentityServer()
+                //.AddDeveloperSigningCredential()
+                .AddSigningCredential(x509Certificate2)
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApis(apiSecret))
                 .AddInMemoryClients(Config.GetClients())
@@ -223,13 +224,13 @@ namespace StsServerIdentity
             });
         }
 
-        private X509Certificate2 GetCertificate(IWebHostEnvironment environment, string certificateThumbprint)
+        private X509Certificate2 GetCertificate(IWebHostEnvironment environment, string certificateName)
         {
-            X509Certificate2 cert = null;
+            var keyVaultEndpoint = _configuration["AzureKeyVaultEndpoint"];
+            KeyVaultCertificateService keyVaultCertificateService
+                = new KeyVaultCertificateService(keyVaultEndpoint, certificateName);
 
-            Console.WriteLine($"AAAA cert: {certificateThumbprint}");
-            // dev, test, production
-            cert = GetCertAsync().GetAwaiter().GetResult();
+            X509Certificate2 cert = keyVaultCertificateService.GetCertificateFromKeyVault();
 
             // for local development
             if (cert == null)
@@ -240,45 +241,45 @@ namespace StsServerIdentity
             return cert;
         }
 
-        private async Task<X509Certificate2> GetCertAsync()
-        {
-            var keyVaultEndpoint = _configuration["AzureKeyVaultEndpoint"];
-            if (!string.IsNullOrEmpty(keyVaultEndpoint))
-            {
-                var azureServiceTokenProvider = new AzureServiceTokenProvider();
-                var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
+        //private async Task<X509Certificate2> GetCertAsync()
+        //{
+        //    var keyVaultEndpoint = _configuration["AzureKeyVaultEndpoint"];
+        //    if (!string.IsNullOrEmpty(keyVaultEndpoint))
+        //    {
+        //        var azureServiceTokenProvider = new AzureServiceTokenProvider();
+        //        var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
 
-                var certificateItems = await GetAllEnabledCertificateVersionsAsync("StsCert", keyVaultClient);
-                var item = certificateItems.FirstOrDefault();
-                if(item != null)
-                {
-                    var cert = await GetCertificateAsync(item.Identifier.Identifier, keyVaultClient);
-                    return cert;
-                }
-            }
-            return null;
-        }
+        //        var certificateItems = await GetAllEnabledCertificateVersionsAsync("StsCert", keyVaultClient);
+        //        var item = certificateItems.FirstOrDefault();
+        //        if(item != null)
+        //        {
+        //            var cert = await GetCertificateAsync(item.Identifier.Identifier, keyVaultClient);
+        //            return cert;
+        //        }
+        //    }
+        //    return null;
+        //}
 
-        private async Task<List<CertificateItem>> GetAllEnabledCertificateVersionsAsync(string certificateName, KeyVaultClient keyVaultClient)
-        {
-            // Get all the certificate versions (this will also get the currect active version)
-            var certificateVersions = await keyVaultClient.GetCertificateVersionsAsync("https://damienbod.vault.azure.net", certificateName);
+        //private async Task<List<CertificateItem>> GetAllEnabledCertificateVersionsAsync(string certificateName, KeyVaultClient keyVaultClient)
+        //{
+        //    // Get all the certificate versions (this will also get the currect active version)
+        //    var certificateVersions = await keyVaultClient.GetCertificateVersionsAsync("https://damienbod.vault.azure.net", certificateName);
 
-            // Find all enabled versions of the certificate and sort them by creation date in decending order 
-            return certificateVersions
-              .Where(certVersion => certVersion.Attributes.Enabled.HasValue && certVersion.Attributes.Enabled.Value)
-              .OrderByDescending(certVersion => certVersion.Attributes.Created)
-              .ToList();
-        }
+        //    // Find all enabled versions of the certificate and sort them by creation date in decending order 
+        //    return certificateVersions
+        //      .Where(certVersion => certVersion.Attributes.Enabled.HasValue && certVersion.Attributes.Enabled.Value)
+        //      .OrderByDescending(certVersion => certVersion.Attributes.Created)
+        //      .ToList();
+        //}
 
-        private async Task<X509Certificate2> GetCertificateAsync(string identitifier, KeyVaultClient keyVaultClient)
-        {
-            var certificateVersionBundle = await keyVaultClient.GetCertificateAsync(identitifier);
-            var certificatePrivateKeySecretBundle = await keyVaultClient.GetSecretAsync(certificateVersionBundle.SecretIdentifier.Identifier);
-            var privateKeyBytes = Convert.FromBase64String(certificatePrivateKeySecretBundle.Value);
-            var certificateWithPrivateKey = new X509Certificate2(privateKeyBytes, (string)null, X509KeyStorageFlags.MachineKeySet);
-            return certificateWithPrivateKey;
-        }
+        //private async Task<X509Certificate2> GetCertificateAsync(string identitifier, KeyVaultClient keyVaultClient)
+        //{
+        //    var certificateVersionBundle = await keyVaultClient.GetCertificateAsync(identitifier);
+        //    var certificatePrivateKeySecretBundle = await keyVaultClient.GetSecretAsync(certificateVersionBundle.SecretIdentifier.Identifier);
+        //    var privateKeyBytes = Convert.FromBase64String(certificatePrivateKeySecretBundle.Value);
+        //    var certificateWithPrivateKey = new X509Certificate2(privateKeyBytes, (string)null, X509KeyStorageFlags.MachineKeySet);
+        //    return certificateWithPrivateKey;
+        //}
 
         private static void AddLocalizationConfigurations(IServiceCollection services)
         {
