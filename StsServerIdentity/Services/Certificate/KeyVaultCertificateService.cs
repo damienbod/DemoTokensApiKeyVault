@@ -16,7 +16,7 @@ namespace StsServerIdentity.Services.Certificate
 
         public KeyVaultCertificateService(string keyVaultEndpoint, string certificateName)
         {
-            if (string.IsNullOrEmpty(_keyVaultEndpoint))
+            if (string.IsNullOrEmpty(keyVaultEndpoint))
             {
                 throw new ArgumentException("missing keyVaultEndpoint");
             }

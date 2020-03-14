@@ -24,14 +24,6 @@ using StsServerIdentity.Services.Certificate;
 using Serilog;
 using Microsoft.AspNetCore.Http;
 using Fido2NetLib;
-using System.Text;
-using System.Threading.Tasks;
-using IdentityServer4.Models;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Services.AppAuthentication;
-using System.Linq;
-using Microsoft.Azure.KeyVault.Models;
-using IdentityServer4.AzureKeyVault;
 
 namespace StsServerIdentity
 {
@@ -240,46 +232,6 @@ namespace StsServerIdentity
 
             return cert;
         }
-
-        //private async Task<X509Certificate2> GetCertAsync()
-        //{
-        //    var keyVaultEndpoint = _configuration["AzureKeyVaultEndpoint"];
-        //    if (!string.IsNullOrEmpty(keyVaultEndpoint))
-        //    {
-        //        var azureServiceTokenProvider = new AzureServiceTokenProvider();
-        //        var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
-
-        //        var certificateItems = await GetAllEnabledCertificateVersionsAsync("StsCert", keyVaultClient);
-        //        var item = certificateItems.FirstOrDefault();
-        //        if(item != null)
-        //        {
-        //            var cert = await GetCertificateAsync(item.Identifier.Identifier, keyVaultClient);
-        //            return cert;
-        //        }
-        //    }
-        //    return null;
-        //}
-
-        //private async Task<List<CertificateItem>> GetAllEnabledCertificateVersionsAsync(string certificateName, KeyVaultClient keyVaultClient)
-        //{
-        //    // Get all the certificate versions (this will also get the currect active version)
-        //    var certificateVersions = await keyVaultClient.GetCertificateVersionsAsync("https://damienbod.vault.azure.net", certificateName);
-
-        //    // Find all enabled versions of the certificate and sort them by creation date in decending order 
-        //    return certificateVersions
-        //      .Where(certVersion => certVersion.Attributes.Enabled.HasValue && certVersion.Attributes.Enabled.Value)
-        //      .OrderByDescending(certVersion => certVersion.Attributes.Created)
-        //      .ToList();
-        //}
-
-        //private async Task<X509Certificate2> GetCertificateAsync(string identitifier, KeyVaultClient keyVaultClient)
-        //{
-        //    var certificateVersionBundle = await keyVaultClient.GetCertificateAsync(identitifier);
-        //    var certificatePrivateKeySecretBundle = await keyVaultClient.GetSecretAsync(certificateVersionBundle.SecretIdentifier.Identifier);
-        //    var privateKeyBytes = Convert.FromBase64String(certificatePrivateKeySecretBundle.Value);
-        //    var certificateWithPrivateKey = new X509Certificate2(privateKeyBytes, (string)null, X509KeyStorageFlags.MachineKeySet);
-        //    return certificateWithPrivateKey;
-        //}
 
         private static void AddLocalizationConfigurations(IServiceCollection services)
         {
