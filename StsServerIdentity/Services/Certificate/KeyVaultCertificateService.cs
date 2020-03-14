@@ -25,15 +25,15 @@ namespace StsServerIdentity.Services.Certificate
             _certificateName = certificateName; // certificateName
         }
 
-        public X509Certificate2 GetCertificateFromKeyVault()
+        public (X509Certificate2, X509Certificate2) GetCertificateFromKeyVault()
         {
-            X509Certificate2 cert = null;
-            Task<X509Certificate2> task = Task.Run(async () => await GetCertAsync());
+            (X509Certificate2, X509Certificate2) cert = (null, null);
+            Task<(X509Certificate2, X509Certificate2)> task = Task.Run(async () => await GetCertAsync());
             cert = task.Result;
             return cert;
         }
 
-        private async Task<X509Certificate2> GetCertAsync()
+        private async Task<(X509Certificate2, X509Certificate2)> GetCertAsync()
         {
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
             var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
@@ -43,10 +43,14 @@ namespace StsServerIdentity.Services.Certificate
             if (item != null)
             {
                 var cert = await GetCertificateAsync(item.Identifier.Identifier, keyVaultClient);
-                return cert;
             }
 
-            return null;
+            if (certificateItems.Count > 1)
+            {
+                var cert = await GetCertificateAsync(certificateItems[1].Identifier.Identifier, keyVaultClient);
+            }
+
+            return (null, null);
         }
 
         private async Task<List<CertificateItem>> GetAllEnabledCertificateVersionsAsync( KeyVaultClient keyVaultClient)
