@@ -1,5 +1,5 @@
 
-## Database migrations
+## Database migrations STS
 
 Add-Migration "init_sts" -c ApplicationDbContext
 
