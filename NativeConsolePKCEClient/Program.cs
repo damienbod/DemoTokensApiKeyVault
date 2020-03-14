@@ -13,6 +13,10 @@ namespace NativeConsolePKCEClient
         static string _authority = "https://stsserveridentity20200311041815.azurewebsites.net";
         static string _api = "https://apiservices20200311091719.azurewebsites.net";
 
+        // Run local
+        //static string _authority = "https://localhost:44318";
+        //static string _api = "https://localhost:44364";
+
         static OidcClient _oidcClient;
         static HttpClient _apiClient = new HttpClient { BaseAddress = new Uri(_api) };
 
