@@ -55,7 +55,7 @@ namespace StsServerIdentity
             });
 
             var x509Certificate2Certs = GetCertificates(_environment, _configuration);
-            //var x509Certificate2Certs = GetCertificates(_environment);
+            //var x509Certificate2Certs = GetCertificatesDirect(_environment);
             AddLocalizationConfigurations(services);
 
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -221,7 +221,7 @@ namespace StsServerIdentity
             });
         }
 
-        //private (X509Certificate2, X509Certificate2) GetCertificates(IWebHostEnvironment environment)
+        //private (X509Certificate2, X509Certificate2) GetCertificatesDirect(IWebHostEnvironment environment)
         //{
         //    (X509Certificate2, X509Certificate2) certs = (null, null);
         //    var keyVaultEndpoint = _configuration["AzureKeyVaultEndpoint"];
@@ -261,7 +261,6 @@ namespace StsServerIdentity
                 //    UseLocalCertStore = Convert.ToBoolean(configuration["UseLocalCertStore"]),
                 //    CertificateThumbprint = configuration["CertificateThumbprint"],
             };
-
 
             (X509Certificate2, X509Certificate2) certs = CertificateService.GetCertificates(
                 certificateConfiguration);
