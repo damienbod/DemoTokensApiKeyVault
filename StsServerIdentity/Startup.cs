@@ -216,22 +216,45 @@ namespace StsServerIdentity
             });
         }
 
-        private X509Certificate2 GetCertificate(IWebHostEnvironment environment, string certificateName)
+        private static X509Certificate2 GetCertificate(IWebHostEnvironment environment, IConfiguration configuration)
         {
-            var keyVaultEndpoint = _configuration["AzureKeyVaultEndpoint"];
-            KeyVaultCertificateService keyVaultCertificateService
-                = new KeyVaultCertificateService(keyVaultEndpoint, certificateName);
-
-            X509Certificate2 cert = keyVaultCertificateService.GetCertificateFromKeyVault();
-
-            // for local development
-            if (cert == null)
+            var certificateConfiguration = new CertificateConfiguration
             {
-                cert = new X509Certificate2(Path.Combine(environment.ContentRootPath, "sts_dev_cert.pfx"), "1234");
-            }
+                // Use a local store with thumprint
+                UseLocalCertStore = Convert.ToBoolean(configuration["UseLocalCertStore"]),
+                CertificateThumbprint = configuration["CertificateThumbprint"],
+
+                // development certificate
+                DevelopmentCertificatePfx = Path.Combine(environment.ContentRootPath, "sts_dev_cert.pfx"),
+                DevelopmentCertificatePassword = "1234",
+
+                // Use an Azure key vault
+                CertificateNameKeyVault = "StsCert",
+                KeyVaultEndpoint = configuration["AzureKeyVaultEndpoint"]
+            };
+
+            X509Certificate2 cert = CertificateService.GetCertificate(
+                certificateConfiguration, environment.IsProduction());
 
             return cert;
         }
+
+        //private X509Certificate2 GetCertificate(IWebHostEnvironment environment, string certificateName)
+        //{
+        //    var keyVaultEndpoint = _configuration["AzureKeyVaultEndpoint"];
+        //    KeyVaultCertificateService keyVaultCertificateService
+        //        = new KeyVaultCertificateService(keyVaultEndpoint, certificateName);
+
+        //    X509Certificate2 cert = keyVaultCertificateService.GetCertificateFromKeyVault();
+
+        //    // for local development
+        //    if (cert == null)
+        //    {
+        //        cert = new X509Certificate2(Path.Combine(environment.ContentRootPath, "sts_dev_cert.pfx"), "1234");
+        //    }
+
+        //    return cert;
+        //}
 
         private static void AddLocalizationConfigurations(IServiceCollection services)
         {
