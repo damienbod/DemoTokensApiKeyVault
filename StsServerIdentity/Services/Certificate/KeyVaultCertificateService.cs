@@ -25,16 +25,17 @@ namespace StsServerIdentity.Services.Certificate
             _certificateName = certificateName; // certificateName
         }
 
-        public (X509Certificate2, X509Certificate2) GetCertificateFromKeyVault()
+        public (X509Certificate2, X509Certificate2) GetCertificatesFromKeyVault()
         {
-            (X509Certificate2, X509Certificate2) cert = (null, null);
-            Task<(X509Certificate2, X509Certificate2)> task = Task.Run(async () => await GetCertAsync());
-            cert = task.Result;
-            return cert;
+            (X509Certificate2, X509Certificate2) certs = (null, null);
+            Task<(X509Certificate2, X509Certificate2)> task = Task.Run(async () => await GetCertsAsync());
+            certs = task.Result;
+            return certs;
         }
 
-        private async Task<(X509Certificate2, X509Certificate2)> GetCertAsync()
+        private async Task<(X509Certificate2, X509Certificate2)> GetCertsAsync()
         {
+            (X509Certificate2, X509Certificate2) certs = (null, null);
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
             var keyVaultClient = new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));
 
@@ -42,15 +43,15 @@ namespace StsServerIdentity.Services.Certificate
             var item = certificateItems.FirstOrDefault();
             if (item != null)
             {
-                var cert = await GetCertificateAsync(item.Identifier.Identifier, keyVaultClient);
+                certs.Item1 = await GetCertificateAsync(item.Identifier.Identifier, keyVaultClient);
             }
 
             if (certificateItems.Count > 1)
             {
-                var cert = await GetCertificateAsync(certificateItems[1].Identifier.Identifier, keyVaultClient);
+                certs.Item2 = await GetCertificateAsync(certificateItems[1].Identifier.Identifier, keyVaultClient);
             }
 
-            return (null, null);
+            return certs;
         }
 
         private async Task<List<CertificateItem>> GetAllEnabledCertificateVersionsAsync( KeyVaultClient keyVaultClient)

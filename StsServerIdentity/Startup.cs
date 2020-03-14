@@ -225,13 +225,13 @@ namespace StsServerIdentity
         {
             (X509Certificate2, X509Certificate2) certs = (null, null);
             var keyVaultEndpoint = _configuration["AzureKeyVaultEndpoint"];
-            if (string.IsNullOrEmpty(keyVaultEndpoint))
+            if (!string.IsNullOrEmpty(keyVaultEndpoint))
             {
                 var name = _configuration["CertificateNameKeyVault"];
                 KeyVaultCertificateService keyVaultCertificateService
                     = new KeyVaultCertificateService(keyVaultEndpoint, name);
 
-                certs = keyVaultCertificateService.GetCertificateFromKeyVault();
+                certs = keyVaultCertificateService.GetCertificatesFromKeyVault();
             }
 
             // for local development
@@ -239,7 +239,7 @@ namespace StsServerIdentity
             {
                 certs.Item1 = new X509Certificate2(
                     Path.Combine(environment.ContentRootPath, "sts_dev_cert.pfx"),
-                    "1234");
+                    _configuration["DevelopmentCertificatePassword"]);
             }
 
             return certs;
