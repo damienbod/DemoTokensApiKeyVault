@@ -54,8 +54,7 @@ namespace StsServerIdentity
                     CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
             });
 
-            var certificateThumbprint = _configuration["CertificateThumbprint"];
-            var x509Certificate2 = GetCertificate(_environment, "StsCert");
+            var x509Certificate2 = GetCertificate(_environment, _configuration);
             AddLocalizationConfigurations(services);
 
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -112,7 +111,7 @@ namespace StsServerIdentity
 
             var identityServer = services.AddIdentityServer()
                 //.AddDeveloperSigningCredential()
-                .AddSigningCredential(x509Certificate2)
+                .AddSigningCredential(x509Certificate2.Item1)
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApis(apiSecret))
                 .AddInMemoryClients(Config.GetClients())
@@ -128,6 +127,11 @@ namespace StsServerIdentity
                     options.EnableTokenCleanup = true;
                     options.TokenCleanupInterval = 30; // interval in seconds
                 });
+
+            if(x509Certificate2.Item2 != null)
+            {
+                identityServer.AddValidationKey(x509Certificate2.Item2);
+            }
 
             services.Configure<Fido2Configuration>(_configuration.GetSection("fido2"));
             services.Configure<Fido2MdsConfiguration>(_configuration.GetSection("fido2mds"));
@@ -216,45 +220,39 @@ namespace StsServerIdentity
             });
         }
 
-        private static X509Certificate2 GetCertificate(IWebHostEnvironment environment, IConfiguration configuration)
+        private static (X509Certificate2, X509Certificate2) GetCertificate(IWebHostEnvironment environment, IConfiguration configuration)
         {
             var certificateConfiguration = new CertificateConfiguration
             {
-                // Use a local store with thumprint
-                UseLocalCertStore = Convert.ToBoolean(configuration["UseLocalCertStore"]),
-                CertificateThumbprint = configuration["CertificateThumbprint"],
+                // Use an Azure key vault
+                CertificateNameKeyVault = configuration["CertificateNameKeyVault"], //"StsCert",
+                KeyVaultEndpoint = configuration["AzureKeyVaultEndpoint"], // "https://damienbod.vault.azure.net"
 
                 // development certificate
                 DevelopmentCertificatePfx = Path.Combine(environment.ContentRootPath, "sts_dev_cert.pfx"),
-                DevelopmentCertificatePassword = "1234",
-
-                // Use an Azure key vault
-                CertificateNameKeyVault = "StsCert",
-                KeyVaultEndpoint = configuration["AzureKeyVaultEndpoint"]
+                DevelopmentCertificatePassword = configuration["DevelopmentCertificatePassword"] //"1234",
             };
+
+            //var certificateConfiguration = new CertificateConfiguration
+            //{
+            //    // Use a local store with thumprint
+            //    UseLocalCertStore = Convert.ToBoolean(configuration["UseLocalCertStore"]),
+            //    CertificateThumbprint = configuration["CertificateThumbprint"],
+
+            //    // Use an Azure key vault
+            //    CertificateNameKeyVault = configuration["CertificateNameKeyVault"], //"StsCert",
+            //    KeyVaultEndpoint = configuration["AzureKeyVaultEndpoint"],
+
+            //    // development certificate
+            //    DevelopmentCertificatePfx = Path.Combine(environment.ContentRootPath, "sts_dev_cert.pfx"),
+            //    DevelopmentCertificatePassword = configuration["DevelopmentCertificatePassword"], //"1234",
+            //};
 
             X509Certificate2 cert = CertificateService.GetCertificate(
                 certificateConfiguration, environment.IsProduction());
 
-            return cert;
+            return (cert, null);
         }
-
-        //private X509Certificate2 GetCertificate(IWebHostEnvironment environment, string certificateName)
-        //{
-        //    var keyVaultEndpoint = _configuration["AzureKeyVaultEndpoint"];
-        //    KeyVaultCertificateService keyVaultCertificateService
-        //        = new KeyVaultCertificateService(keyVaultEndpoint, certificateName);
-
-        //    X509Certificate2 cert = keyVaultCertificateService.GetCertificateFromKeyVault();
-
-        //    // for local development
-        //    if (cert == null)
-        //    {
-        //        cert = new X509Certificate2(Path.Combine(environment.ContentRootPath, "sts_dev_cert.pfx"), "1234");
-        //    }
-
-        //    return cert;
-        //}
 
         private static void AddLocalizationConfigurations(IServiceCollection services)
         {
