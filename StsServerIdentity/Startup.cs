@@ -112,7 +112,7 @@ namespace StsServerIdentity
 
             var identityServer = services.AddIdentityServer()
                 //.AddDeveloperSigningCredential()
-                .AddSigningCredential(x509Certificate2Certs.Item1)
+                .AddSigningCredential(x509Certificate2Certs.ActiveCertificate)
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApis(apiSecret))
                 .AddInMemoryClients(Config.GetClients())
@@ -129,9 +129,9 @@ namespace StsServerIdentity
                     options.TokenCleanupInterval = 30; // interval in seconds
                 });
 
-            if (x509Certificate2Certs.Item2 != null)
+            if (x509Certificate2Certs.SecondaryCertificate != null)
             {
-                identityServer.AddValidationKey(x509Certificate2Certs.Item2);
+                identityServer.AddValidationKey(x509Certificate2Certs.SecondaryCertificate);
             }
 
             services.Configure<Fido2Configuration>(_configuration.GetSection("fido2"));
@@ -221,9 +221,9 @@ namespace StsServerIdentity
             });
         }
 
-        //private (X509Certificate2, X509Certificate2) GetCertificatesDirect(IWebHostEnvironment environment)
+        //private (X509Certificate2 ActiveCertificate, X509Certificate2 SecondaryCertificate) GetCertificatesDirect(IWebHostEnvironment environment)
         //{
-        //    (X509Certificate2, X509Certificate2) certs = (null, null);
+        //    (X509Certificate2 ActiveCertificate, X509Certificate2 SecondaryCertificate) certs = (null, null);
         //    var keyVaultEndpoint = _configuration["AzureKeyVaultEndpoint"];
         //    if (!string.IsNullOrEmpty(keyVaultEndpoint))
         //    {
@@ -235,9 +235,9 @@ namespace StsServerIdentity
         //    }
 
         //    // for local development
-        //    if (certs.Item1 == null)
+        //    if (certs.ActiveCertificate == null)
         //    {
-        //        certs.Item1 = new X509Certificate2(
+        //        certs.ActiveCertificate = new X509Certificate2(
         //            Path.Combine(environment.ContentRootPath, "sts_dev_cert.pfx"),
         //            _configuration["DevelopmentCertificatePassword"]);
         //    }
@@ -245,7 +245,7 @@ namespace StsServerIdentity
         //    return certs;
         //}
 
-        private static (X509Certificate2, X509Certificate2) GetCertificates(IWebHostEnvironment environment, IConfiguration configuration)
+        private static (X509Certificate2 ActiveCertificate, X509Certificate2 SecondaryCertificate) GetCertificates(IWebHostEnvironment environment, IConfiguration configuration)
         {
             var certificateConfiguration = new CertificateConfiguration
             {
@@ -262,7 +262,7 @@ namespace StsServerIdentity
                 //CertificateThumbprint = configuration["CertificateThumbprint"],
             };
 
-            (X509Certificate2, X509Certificate2) certs = CertificateService.GetCertificates(
+            (X509Certificate2 ActiveCertificate, X509Certificate2 SecondaryCertificate) certs = CertificateService.GetCertificates(
                 certificateConfiguration);
 
             return certs;
